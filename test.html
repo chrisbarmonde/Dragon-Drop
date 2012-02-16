@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>DRAGON DROP</title>
+	<style type="text/css">
+		#thing {
+			width:400px;
+			height:300px;
+			background-color:#0aa;
+		}
+
+		#other-thing, #other-thing1 {
+			background-color:#aa0;
+		}
+
+		#other-thing {
+			position:absolute;
+			top:100px;
+			left:1000px;
+			width:400px;
+			height:300px;
+		}
+
+		#other-thing1 {
+			position:absolute;
+			top:400px;
+			left:500px;
+			width:200px;
+			height:300px;
+		}
+	</style>
+</head>
+<body>
+<p>A browser that implements HTML5 drag and drop (webkit??) is required, dawg.</p>
+
+<div id="thing" draggable="true">
+	Hello I am draggable
+</div>
+
+<div id="other-thing">
+	I guess you can put him here
+</div>
+
+<div id="other-thing1">
+	oh no don't burn me
+</div>
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script>
+	$(function() {
+		$('#thing').on('dragstart', function() { console.log('starting'); });
+		$('#other-thing, #other-thing1').on('dragend', function() { console.log('ending'); })
+										.on('dragover', function() { console.log('dragging'); });
+	});
+</script>
+</body>
+</html>
