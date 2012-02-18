@@ -17,6 +17,7 @@ var FlameParticleEngine = function(options) {
 	this.canvas = $('<canvas/>')
 		.prop('width', this.options.width)
 		.prop('height', this.options.height)
+		.css('z-index', '100000')
 		.css('position', 'absolute');
 	this.context = this.canvas[0].getContext('2d');
 };

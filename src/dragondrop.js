@@ -35,7 +35,7 @@ var DragonDrop = function(options) {
 	this.dragon_type = options.dragon;
 	this.dragon_options = dragons[this.dragon_type];
 	this.dragon = $('<img/>')
-		.css('opacity', 1)
+		.css('opacity', '0.5')
 		.prop('src', chrome.extension.getURL('images/dragons/' + this.dragon_type));
 	this.dragon_breath = new FlameParticleEngine(this.dragon_options.particleEngine);
 };
@@ -77,6 +77,10 @@ _.extend(DragonDrop.prototype, {
 		event.originalEvent.dataTransfer.setDragImage(
 			this.dragon.get(0), pos[0], pos[1]
 		);
+
+		// Required in order for drag events to trigger in some browsers?
+		event.originalEvent.dataTransfer.setData('text/html', null);
+
 		this.dragon_breath.start();
 		this.dragon_comin_yo = true;
 
