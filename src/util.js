@@ -1,6 +1,10 @@
 $.fn.extend({
 	exists: function() {
 		return this.length > 0;
+	},
+	realOn: function(eventName, callback) {
+		this.get(0).realAddEventListener(eventName, callback, false);
+		return this;
 	}
 });
 

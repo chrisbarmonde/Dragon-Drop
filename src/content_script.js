@@ -9,17 +9,13 @@ script.onload = function() {
 	console.log('registering');
 
 	document.getElementById('dragondrop_events').addEventListener('DragonDropUpdate', function(event) {
-		console.log("FIRING UPDATE");
-		var elements = $('[dragondrop]');
+		console.log("FIRING UPDATE FOR " + event.detail.eventName);
 
-		_.each(elements, function(element) {
-			element = $(element);
-
-			dd.attachFarmland(element, {
-				is_draggable: !!element.attr('dragondrop-draggable'),
-				is_droppable: !!element.attr('dragondrop-droppable')
-			});
-		});
+		var $element = $(event.detail.element);
+		var farmland = dd.attachFarmland($(event.detail.element));
+		if (typeof event.detail.callback == "function") {
+			farmland.addCallback(event.detail.eventName, event.detail.callback);
+		}
 	});
 };
 document.querySelector('html').appendChild(script);

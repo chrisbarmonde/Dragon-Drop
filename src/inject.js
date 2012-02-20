@@ -18,18 +18,20 @@
 		// Override with DRAGON DROPPING TECHNOLOGY
 		if (drag_events.indexOf(eventName) > -1) {
 			if (drag_events_we_actually_care_about.indexOf(eventName) > -1) {
-
-				this.setAttribute('dragondrop', true);
 				switch (eventName) {
-					case 'dragstart': this.setAttribute('dragondrop-draggable', true); break;
-					case 'drop': this.setAttribute('dragondrop-droppable', true); break;
+					case 'dragstart': this.setAttribute('dragondrop-draggable', 'true'); break;
+					case 'drop': this.setAttribute('dragondrop-droppable', 'true'); break;
 				}
 
-				// Custom event
-				var dragondrop_event = document.createEvent('Event');
-				dragondrop_event.initEvent('DragonDropUpdate', false, false);
+				var dragondrop_event = document.createEvent('CustomEvent');
+				dragondrop_event.initCustomEvent('DragonDropUpdate', false, false, {
+					eventName: eventName,
+					element: this,
+					callback: callback
+				});
 				dragondrop_el.dispatchEvent(dragondrop_event);
 			}
+
 			return;
 		}
 

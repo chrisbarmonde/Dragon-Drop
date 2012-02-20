@@ -46,16 +46,26 @@ _.extend(DragonDrop.prototype, {
 
 		if (farmland.isDraggable() && !this.isLair(farmland)) {
 			this.lairs.push(farmland);
-			farmland.$el.on('dragstart.dragondrop', this.dragstart.bind(this))
-					  .on('drag.dragondrop', this.drag.bind(this))
-					  .on('dragend.dragondrop', this.dragend.bind(this));
+			farmland.$el.realOn('dragstart', farmland.bindCallback('dragstart', this.dragstart.bind(this)))
+				.realOn('drag', farmland.bindCallback('drag', this.drag.bind(this)))
+				.realOn('dragend', farmland.bindCallback('dragend', this.dragend.bind(this)));
 		}
 
 		if (farmland.isDroppable() && !this.isDropzone(farmland)) {
 			this.dropzones.push(farmland);
-			farmland.$el.on('dragover.dragondrop', farmland.burninate.bind(farmland))
-						.on('drop.dragondrop', farmland.explode.bind(farmland));
+			farmland.$el.realOn('dragover', farmland.bindCallback('dragover', function() {
+					if (this.dragon_comin_yo) {
+						farmland.burninate();
+					}
+				}.bind(this)))
+				.realOn('drop', farmland.bindCallback('drop', function() {
+					if (this.dragon_comin_yo) {
+						farmland.explode();
+					}
+				}.bind(this)));
 		}
+
+		return farmland;
 	},
 
 	getFarmland: function(element) {
@@ -74,12 +84,12 @@ _.extend(DragonDrop.prototype, {
 
 	dragstart: function(event) {
 		var pos = this.dragon_options.position;
-		event.originalEvent.dataTransfer.setDragImage(
+		event.dataTransfer.setDragImage(
 			this.dragon.get(0), pos[0], pos[1]
 		);
 
 		// Required in order for drag events to trigger in some browsers?
-		event.originalEvent.dataTransfer.setData('text/html', null);
+		event.dataTransfer.setData('text/html', null);
 
 		this.dragon_breath.start();
 		this.dragon_comin_yo = true;
@@ -88,7 +98,7 @@ _.extend(DragonDrop.prototype, {
 	},
 
 	drag: function(event) {
-		this.dragon_breath.move(event.originalEvent, this.dragon_options.flamePosition);
+		this.dragon_breath.move(event, this.dragon_options.flamePosition);
 	},
 
 	dragend: function(event) {
@@ -132,11 +142,40 @@ _.extend(DragonDrop.prototype, {
 var DragonDropFarmland = function(options) {
 	this.on_fire = false;
 	this.flames = [];
+	this.callbacks = {};
+
 	this.$el = options.el;
 	this.el = this.$el.get(0);
 }
 
 _.extend(DragonDropFarmland.prototype, {
+	addCallback: function(eventName, callback) {
+		if (!this.callbacks[eventName]) {
+			this.callbacks[eventName] = [];
+		}
+
+		this.callbacks[eventName].push(callback);
+	},
+
+	bindCallback: function(eventName, cb) {
+		console.log("Binding for " + eventName);
+
+		var callbacks = this.callbacks;
+		return function(event) {
+			try {
+				if (!!callbacks[eventName]) {
+					console.log("Found " + callbacks[eventName].length + " original callbacks");
+					_.each(callbacks[eventName], function(callback) {
+						callback(event);
+					})
+				}
+			} catch (e) {
+				// Ignore any stupid crap the site dev does, I guess???
+			}
+			cb(event);
+		};
+	},
+
 	isDraggable: function() {
 		return this.$el.attr('dragondrop-draggable');
 	},
@@ -146,7 +185,6 @@ _.extend(DragonDropFarmland.prototype, {
 	},
 
 	burninate: function() {
-console.log('burninating');
 		if (this.flames.length > 0) {
 			if (!this.on_fire) {
 				_.each(this.flames, function(flame) {
