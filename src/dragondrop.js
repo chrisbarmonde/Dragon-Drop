@@ -88,8 +88,10 @@ _.extend(DragonDrop.prototype, {
 			this.dragon.get(0), pos[0], pos[1]
 		);
 
-		// Required in order for drag events to trigger in some browsers?
-		event.dataTransfer.setData('text/html', null);
+		if (!event.dataTransfer.hasData()) {
+			// Required in order for drag events to trigger in some browsers?
+			event.dataTransfer.setData('text/html', null);
+		}
 
 		this.dragon_breath.start();
 		this.dragon_comin_yo = true;
@@ -162,6 +164,7 @@ _.extend(DragonDropFarmland.prototype, {
 
 		var callbacks = this.callbacks;
 		return function(event) {
+
 			try {
 				if (!!callbacks[eventName]) {
 					console.log("Found " + callbacks[eventName].length + " original callbacks");

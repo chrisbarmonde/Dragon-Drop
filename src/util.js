@@ -18,3 +18,17 @@ Function.prototype.bind = function(a) {
 		return b.apply(a, d)
 	}
 };
+
+// Need a way to determine if the dataTransfer object actually has data attached. If it doesn't, then
+// some browsers will just not fire certain drag events.
+_.extend(Clipboard.prototype, {
+	dataSet: false,
+	realSetData: Clipboard.prototype.setData,
+	setData: function(mime_type, data) {
+		this.dataSet = true;
+		this.realSetData(mime_type, data);
+	},
+	hasData: function() {
+		return this.dataSet || this.files.length > 0 || this.items.length > 0;
+	}
+})
