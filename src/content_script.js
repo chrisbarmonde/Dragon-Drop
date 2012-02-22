@@ -21,6 +21,16 @@ script.onload = function() {
 		}
 	});
 };
-document.querySelector('html').appendChild(script);
+
+
+// Not sure why the fuck I need to inject this, but while testing on
+// http://www.html5rocks.com/en/tutorials/dnd/basics/
+// it appeared to not work unless I did??? I dunno
+var clipboard = document.createElement('script');
+clipboard.src = chrome.extension.getURL('src/clipboard.js');
+
+var html = document.querySelector('html');
+html.appendChild(script);
+html.appendChild(clipboard);
 
 console.log('what the what');

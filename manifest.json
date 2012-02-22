@@ -21,6 +21,7 @@
 			"src/lib/jquery.min.js",
 			"src/lib/underscore-min.js",
 			"src/util.js",
+			"src/clipboard.js",
 			"src/imgparticle.js",
 			"src/particleengine.js",
 			"src/dragondrop.js",

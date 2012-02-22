@@ -119,8 +119,8 @@ _.extend(FlameParticleEngine.prototype, {
 	move: function(event, offset) {
 		event.preventDefault();
 		this.canvas.css({
-			'left': (event.clientX + offset[0]) + 'px',
-			'top': (event.clientY + offset[1]) + 'px'
+			'left': (event.pageX + offset[0]) + 'px',
+			'top': (event.pageY + offset[1]) + 'px'
 		});
 	}
 });
