@@ -17,6 +17,7 @@
 		"run_at": "document_start",
 		"all_frames": false,
 		"js": [
+			"config.js",
 			"src/lib/jquery.min.js",
 			"src/lib/underscore-min.js",
 			"src/util.js",

@@ -1,30 +1,3 @@
-var dragons = {
-	// Name of the image
-	'dragon.jpg': {
-		position: [125, 200], // Position of dragon relative to cursor
-		flamePosition: [-510, 10], // Position of flame relative to cursor
-		particleEngine: {
-			debug: false, // adds some extra logging + bounding box
-			width: 500, // Width of canvas element
-			height: 500, // Height of canvas element
-			max_particles: 50, // Max number of particles at a time (more generally = longer flame)
-			particle: {
-				source: [425, 60], // Where the flame begins, relative to canvas element bounds
-
-				// These are ranges of values so give some randomization to the flame
-				// so [4, 8] means the y-axis velocity will be between 4 and 8, randomly per-particle
-				velX: [-8, -6], // X-axis velocity
-				velY: [4, 8], // Y-axis velocity
-				size: [2, 5], // Size of the particle
-				gravity: [-.1, .1], // Affect of gravity on the particle. Negative pulls up, positive pulls down
-				drag: 1.0, // Drag on the particle (how fast/slow it is, typically shouldn't go below like 0.95)
-				shrink: .99, // How quickly the particle shrinks (0.0-1.0)
-				compositeOperation: 'lighter' // You want this to have it blend on screen, but you can change it if you're dumb
-			}
-		}
-	}
-};
-
 
 var DragonDrop = function(options) {
 	this.dragon_comin_yo = false;
@@ -32,12 +5,13 @@ var DragonDrop = function(options) {
 	this.lairs = [];
 	this.dropzones = [];
 
-	this.dragon_type = options.dragon;
-	this.dragon_options = dragons[this.dragon_type];
+	this.dragon_options = options.dragon;
 	this.dragon = $('<img/>')
-		.css('opacity', '0.5')
-		.prop('src', chrome.extension.getURL('images/dragons/' + this.dragon_type));
+		.css('opacity', '0.5', 'important')
+		.prop('src', chrome.extension.getURL(this.dragon_options.image));
 	this.dragon_breath = new FlameParticleEngine(this.dragon_options.particleEngine);
+
+	this.flame_options = options.flames;
 };
 
 _.extend(DragonDrop.prototype, {
@@ -76,7 +50,7 @@ _.extend(DragonDrop.prototype, {
 			}
 		}
 
-		var farmland = new DragonDropFarmland({el: element});
+		var farmland = new DragonDropFarmland({el: element, flame: this.flame_options});
 		this.farmland.push(farmland);
 
 		return farmland;
@@ -143,7 +117,8 @@ _.extend(DragonDrop.prototype, {
 
 var DragonDropFarmland = function(options) {
 	this.on_fire = false;
-	this.flames = [];
+	this.flame = null;
+	this.flame_options = options.flame;
 	this.callbacks = {};
 
 	this.$el = options.el;
@@ -188,12 +163,9 @@ _.extend(DragonDropFarmland.prototype, {
 	},
 
 	burninate: function() {
-		if (this.flames.length > 0) {
+		if (!!this.flame) {
 			if (!this.on_fire) {
-				_.each(this.flames, function(flame) {
-					flame.start();
-				});
-
+				this.flame.start();
 				this.on_fire = true;
 			}
 			return;
@@ -204,34 +176,29 @@ _.extend(DragonDropFarmland.prototype, {
 
 		this.on_fire = true;
 
-		// @todo configurable
-		for (var i = 1; i <= 3; i++) {
-			var flame = new FlameParticleEngine({
-				debug: false,
-				width: w + 100,
-				height: h + 100,
-				max_particles: 10,
-				particle: {
-					source: [w / 3 * i, h + 20],
-					velX: [-10, 10],
-					velY: [-6, -18],
-					size: [3, 6],
-					gravity: [-.75, -.85],
-					drag: .95,
-					shrink: .98,
-					compositeOperation: 'lighter'
-				}
-			});
-
-			var offset = this.$el.offset();
-			flame.canvas.css({
-				'top': (offset.top - 100) + 'px',
-				'left': (offset.left - 50) + 'px'
-			});
-			flame.start();
-
-			this.flames.push(flame);
+		var sources = [];
+		for (var i = 1; i <= this.flame_options.sources; i++) {
+			sources.push([
+				Math.floor((w / (this.flame_options.sources + 1)) * i + (this.flame_options.width_modifier / 2)),
+				Math.floor(h + (this.flame_options.height_modifier / 2))
+			]);
 		}
+
+		this.flame = new FlameParticleEngine({
+			debug: this.flame_options.debug,
+			width: w + this.flame_options.width_modifier,
+			height: h + this.flame_options.height_modifier,
+			max_particles: sources.length * this.flame_options.max_particles_modifier,
+			particle: _.defaults({source: sources}, this.flame_options.particle)
+		});
+
+
+		var offset = this.$el.offset();
+		this.flame.canvas.css({
+			'top': (offset.top - Math.floor(this.flame_options.height_modifier / 2)) + 'px',
+			'left': (offset.left - Math.floor(this.flame_options.width_modifier / 2)) + 'px'
+		});
+		this.flame.start();
 	},
 
 	extinguish: function() {
@@ -239,10 +206,7 @@ _.extend(DragonDropFarmland.prototype, {
 			return;
 		}
 
-		_.each(this.flames, function(flame) {
-			flame.end(3000);
-		});
-
+		this.flame.end(this.flame_options.extinguish_time);
 		this.on_fire = false;
 	},
 

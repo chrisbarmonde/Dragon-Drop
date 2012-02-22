@@ -1,5 +1,8 @@
 
-var dd = new DragonDrop({dragon: 'dragon.jpg'});
+var dd = new DragonDrop({
+	dragon: config.dragons['default'],
+	flames: config.flames
+});
 
 console.log("CONTENT SCRIPT");
 

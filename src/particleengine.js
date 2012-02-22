@@ -99,7 +99,9 @@ _.extend(FlameParticleEngine.prototype, {
 		var opts = this.options.particle;
 		for (var i = 0; i < particleCount; i++) {
 
-			var particle = new GlowParticle(opts.source[0], opts.source[1]);
+			// Get a random source to add to
+			var source = _.shuffle(opts.source)[0];
+			var particle = new GlowParticle(source[0], source[1]);
 
 			// Give particle random settings
 			particle.velX = randomRange(opts.velX[0], opts.velX[1]);
