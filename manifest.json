@@ -1,6 +1,6 @@
 {
 	"name": "Dragon Drop",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "__MSG_app_description__",
 
 	"default_locale": "en",
@@ -13,6 +13,8 @@
 		"default_icon": "images/16x16.png",
 		"default_title": "Dragon Drop"
 	},
+
+	"background_page": "background.html",
 	"content_scripts": [{
 		"run_at": "document_start",
 		"all_frames": false,
@@ -30,9 +32,9 @@
 		"matches": [ "http://*/*", "https://*/*" ]
 	}],
 
-	"options_page": "options.html",
 	"permissions": [
-		"tabs", "notifications",
-		"http://*/*", "https://*/*"
+		"tabs",
+		"http://*/*",
+		"https://*/*"
 	]
 }

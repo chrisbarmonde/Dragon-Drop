@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script>
+		chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+			chrome.pageAction.show(tabId);
+		});
+
+		function toggleIcon(enabled, tabId) {
+			var path = "images/16x16-active.png";
+			if (!enabled) {
+				path = "images/16x16.png";
+			}
+			chrome.pageAction.setIcon({tabId: tabId, path: path})
+		}
+
+		chrome.pageAction.onClicked.addListener(function(tab) {
+			chrome.tabs.sendRequest(tab.id, {toggle: true}, function(request) {
+				toggleIcon(request.enabled, tab.id);
+			});
+		})
+
+		chrome.extension.onRequest.addListener(function(request, sender) {
+			toggleIcon(request.enabled, sender.tab.id);
+		})
+	</script>
+</head>
+<body>
+
+</body>
+</html>

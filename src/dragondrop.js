@@ -12,9 +12,26 @@ var DragonDrop = function(options) {
 	this.dragon_breath = new FlameParticleEngine(this.dragon_options.particleEngine);
 
 	this.flame_options = options.flames;
+
+	this.active = false;
+	this.enabled = false;
 };
 
 _.extend(DragonDrop.prototype, {
+	enable: function() {
+		this.enabled = true;
+		_.each(this.farmland, function(farmland) {
+			farmland.enable();
+		});
+	},
+
+	disable: function() {
+		this.enabled = false;
+		_.each(this.farmland, function(farmland) {
+			farmland.disable();
+		});
+	},
+
 	attachFarmland: function(element, opts) {
 		var farmland = this.getFarmland(element);
 
@@ -54,6 +71,7 @@ _.extend(DragonDrop.prototype, {
 		}
 
 		var farmland = new DragonDropFarmland({el: element, flame: this.flame_options});
+		farmland.enabled = this.enabled;
 		this.farmland.push(farmland);
 
 		return farmland;
@@ -127,9 +145,18 @@ var DragonDropFarmland = function(options) {
 
 	this.$el = options.el;
 	this.el = this.$el.get(0);
+	this.enabled = false;
 }
 
 _.extend(DragonDropFarmland.prototype, {
+	enable: function() {
+		this.enabled = true;
+	},
+
+	disable: function() {
+		this.enabled = false;
+	},
+
 	addCallback: function(eventName, callback) {
 		if (!this.page_callbacks[eventName]) {
 			this.page_callbacks[eventName] = [];
@@ -154,7 +181,7 @@ _.extend(DragonDropFarmland.prototype, {
 				console.log(e.message);
 			}
 
-			if (typeof cb == "function") {
+			if (this.enabled && typeof cb == "function") {
 				cb(event);
 			}
 		}.bind(this);

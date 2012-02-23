@@ -4,8 +4,6 @@ var dd = new DragonDrop({
 	flames: config.flames
 });
 
-console.log("CONTENT SCRIPT");
-
 var script = document.createElement('script');
 script.src = chrome.extension.getURL('src/inject.js');
 script.onload = function() {
@@ -13,6 +11,13 @@ script.onload = function() {
 
 	document.getElementById('dragondrop_events').addEventListener('DragonDropUpdate', function(event) {
 		console.log("FIRING UPDATE FOR " + event.detail.eventName);
+
+		// Activate the magic
+		if (!dd.active) {
+			dd.active = true;
+			dd.enable();
+			chrome.extension.sendRequest({enabled: true});
+		}
 
 		var $element = $(event.detail.element);
 		var farmland = dd.attachFarmland($(event.detail.element));
@@ -33,4 +38,10 @@ var html = document.querySelector('html');
 html.appendChild(script);
 html.appendChild(clipboard);
 
-console.log('what the what');
+
+chrome.extension.onRequest.addListener(function(request, sender, callback) {
+	if (dd.active) {
+		dd[(dd.enabled) ? 'disable' : 'enable']();
+	}
+	callback({enabled: dd.enabled});
+});
