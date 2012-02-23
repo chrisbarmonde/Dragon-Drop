@@ -10,10 +10,12 @@ var FlameParticleEngine = function(options) {
 	_.extend(this.options, options);
 
 	this.particles = [];
-	this.interval = null;
-	this.finish = false;
 	this.max_particles = this.options.max_particles;
 	this.events = {};
+
+	this.interval = null;
+	this.explosion_interval = null;
+	this.finish = false;
 
 	this.canvas = $('<canvas/>')
 		.prop('width', this.options.width)
@@ -36,9 +38,15 @@ _.extend(FlameParticleEngine.prototype, {
 	},
 
 	start: function() {
-		this.log('starting');
-
 		if (!this.finish) {
+
+			if (this.options.top) {
+				this.canvas.css('top', this.options.top + 'px');
+			}
+			if (this.options.left) {
+				this.canvas.css('left', this.options.left + 'px');
+			}
+
 			$('body').append(this.canvas);
 			this.interval = setInterval(this.loop.bind(this), 500 / this.max_particles); //@todo not hardcode?
 
@@ -54,9 +62,10 @@ _.extend(FlameParticleEngine.prototype, {
 	end: function(delay) {
 
 		var end = function() {
-			this.log('ending');
-			this.canvas.remove();
 			clearInterval(this.interval);
+			clearInterval(this.explosion_interval);
+
+			this.canvas.remove();
 			this.finish = false;
 		}.bind(this);
 
@@ -73,7 +82,26 @@ _.extend(FlameParticleEngine.prototype, {
 	},
 
 	explode: function() {
-		this.makeParticle(3 * this.max_particles, this.options.explosion);
+		this.makeParticle(4 * this.max_particles, this.options.explosion);
+
+		var offset = this.canvas.offset();
+		var bounds = {
+			top: [offset.top - 40, offset.top + 40],
+			left: [offset.left - 40, offset.left + 40]
+		};
+
+		this.explosion_interval = setInterval(function() {
+			offset.top += Math.floor(randomRange(-10, 10));
+			offset.left += Math.floor(randomRange(-10, 10));
+
+			offset.top = Math.max(bounds.top[0], Math.min(bounds.top[1], offset.top));
+			offset.left = Math.max(bounds.left[0], Math.min(bounds.left[1], offset.left));
+
+			this.canvas.css({
+				'top': offset.top + 'px',
+				'left': offset.left + 'px'
+			});
+		}.bind(this), 30);
 	},
 
 	loop: function() {

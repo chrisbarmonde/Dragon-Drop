@@ -28,8 +28,8 @@ var config = {
 		"debug": false,
 		"width_modifier": 100,
 		"height_modifier": 100,
-		"sources": 3,
-		"max_particles_modifier": 10,
+		"sources": 6,
+		"max_particles_modifier": 5,
 		"extinguish_time": 3000,
 		"particle": {
 			"velX": [-10, 10],

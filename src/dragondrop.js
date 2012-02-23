@@ -219,6 +219,10 @@ _.extend(DragonDropFarmland.prototype, {
 			]);
 		}
 
+		var offset = this.$el.offset();
+
+		var top = offset.top - Math.floor(this.flame_options.height_modifier / 2);
+		var left = offset.left - Math.floor(this.flame_options.width_modifier / 2);
 		var width = w + this.flame_options.width_modifier;
 		var height = h + this.flame_options.height_modifier;
 
@@ -227,16 +231,11 @@ _.extend(DragonDropFarmland.prototype, {
 			debug: this.flame_options.debug,
 			width: width,
 			height: height,
+			top: top,
+			left: left,
 			max_particles: sources.length * this.flame_options.max_particles_modifier,
 			particle: _.defaults({source: sources}, this.flame_options.particle),
 			explosion: _.defaults({source: [[Math.floor(width / 2), Math.floor(height / 2)]]}, this.flame_options.explosion)
-		});
-
-
-		var offset = this.$el.offset();
-		this.flame.canvas.css({
-			'top': (offset.top - Math.floor(this.flame_options.height_modifier / 2)) + 'px',
-			'left': (offset.left - Math.floor(this.flame_options.width_modifier / 2)) + 'px'
 		});
 
 		if (this.isDraggable()) {
