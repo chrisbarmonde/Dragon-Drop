@@ -192,13 +192,17 @@ _.extend(DragonDropFarmland.prototype, {
 			]);
 		}
 
+		var width = w + this.flame_options.width_modifier;
+		var height = h + this.flame_options.height_modifier;
+
 		this.flame = new FlameParticleEngine({
 			el: this.$el,
 			debug: this.flame_options.debug,
-			width: w + this.flame_options.width_modifier,
-			height: h + this.flame_options.height_modifier,
+			width: width,
+			height: height,
 			max_particles: sources.length * this.flame_options.max_particles_modifier,
-			particle: _.defaults({source: sources}, this.flame_options.particle)
+			particle: _.defaults({source: sources}, this.flame_options.particle),
+			explosion: _.defaults({source: [[Math.floor(width / 2), Math.floor(height / 2)]]}, this.flame_options.explosion)
 		});
 
 
@@ -213,9 +217,8 @@ _.extend(DragonDropFarmland.prototype, {
 		}
 
 		if (this.isDroppable()) {
-			console.log('adding drop event');
 			this.flame
-				.addEvent('drop', function(event) { console.log("shit is droppin yo"); this.callbacks['drop'](event.originalEvent); }.bind(this))
+				.addEvent('drop', function(event) { this.callbacks['drop'](event.originalEvent); }.bind(this))
 				.addEvent('dragenter', function(event) { event.preventDefault(); })
 				.addEvent('dragover', function(event) { event.preventDefault(); });
 		}
@@ -233,6 +236,7 @@ _.extend(DragonDropFarmland.prototype, {
 	},
 
 	explode: function() {
-
+		console.log("EXPLODIN'");
+		this.flame.explode();
 	}
 });

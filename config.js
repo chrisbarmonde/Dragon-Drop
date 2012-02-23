@@ -38,6 +38,15 @@ var config = {
 			"drag": .96,
 			"shrink": .98,
 			"compositeOperation": "lighter"
+		},
+		"explosion": {
+			"velX": [-20, 20],
+			"velY": [-20, 20],
+			"size": [4, 9],
+			"gravity": [0, 0],
+			"drag": .99,
+			"shrink": .99,
+			"compositeOperation": "lighter"
 		}
 	}
 }

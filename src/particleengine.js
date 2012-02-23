@@ -41,6 +41,8 @@ _.extend(FlameParticleEngine.prototype, {
 		if (!this.finish) {
 			$('body').append(this.canvas);
 			this.interval = setInterval(this.loop.bind(this), 500 / this.max_particles); //@todo not hardcode?
+
+			// re-add events
 			_.each(this.events, function(event, eventName) {
 				this.canvas.on(eventName, event);
 			}.bind(this));
@@ -70,10 +72,16 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 	},
 
+	explode: function() {
+		this.makeParticle(3 * this.max_particles, this.options.explosion);
+	},
+
 	loop: function() {
 
 		// make a particle
-		this.makeParticle(1);
+		if (!this.finish) {
+			this.makeParticle(1, this.options.particle);
+		}
 
 		// clear the canvas
 		if (this.options.debug) {
@@ -96,15 +104,12 @@ _.extend(FlameParticleEngine.prototype, {
 
 		// Keep taking the oldest particles away until we have
 		// fewer than the maximum allowed.
-		while (this.particles.length > this.max_particles) {
+		while (!this.finish && this.particles.length > this.max_particles) {
 			this.particles.shift();
 		}
 	},
 
-	makeParticle: function(particleCount) {
-		if (this.finish) return;
-
-		var opts = this.options.particle;
+	makeParticle: function(particleCount, opts) {
 		for (var i = 0; i < particleCount; i++) {
 
 			// Get a random source to add to
