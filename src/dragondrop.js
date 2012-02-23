@@ -27,16 +27,19 @@ _.extend(DragonDrop.prototype, {
 
 		if (farmland.isDroppable() && !this.isDropzone(farmland)) {
 			this.dropzones.push(farmland);
-			farmland.$el.realOn('dragover', farmland.bindCallback('dragover', function() {
+			farmland.$el.realOn('dragover', farmland.bindCallback('dragover', function(event) {
+					event.preventDefault();
 					if (this.dragon_comin_yo) {
 						farmland.burninate();
 					}
 				}.bind(this)))
-				.realOn('drop', farmland.bindCallback('drop', function() {
+				.realOn('drop', farmland.bindCallback('drop', function(event) {
 					if (this.dragon_comin_yo) {
 						farmland.explode();
 					}
-				}.bind(this)));
+				}.bind(this)))
+				.realOn('dragenter', function(event) { event.preventDefault(); farmland.bindCallback('dragenter')(event); })
+				.realOn('dragleave', farmland.bindCallback('dragleave'));
 		}
 
 		return farmland;
@@ -64,7 +67,7 @@ _.extend(DragonDrop.prototype, {
 
 		if (!event.dataTransfer.hasData()) {
 			// Required in order for drag events to trigger in some browsers?
-			event.dataTransfer.setData('text/html', null);
+			event.dataTransfer.setData('text/plain', 'this is some awesome text');
 		}
 
 		this.dragon_breath.start();
@@ -139,19 +142,23 @@ _.extend(DragonDropFarmland.prototype, {
 
 		var callbacks = this.callbacks;
 		return function(event) {
-
 			try {
-				if (!!callbacks[eventName]) {
-					console.log("Found " + callbacks[eventName].length + " original callbacks");
-					_.each(callbacks[eventName], function(callback) {
+				if (!!this.callbacks[eventName]) {
+					console.log("Found " + this.callbacks[eventName].length + " original callbacks");
+					_.each(this.callbacks[eventName], function(callback) {
 						callback(event);
 					})
 				}
 			} catch (e) {
 				// Ignore any stupid crap the site dev does, I guess???
+				console.log("Error: ");
+				console.log(e.message);
 			}
-			cb(event);
-		};
+
+			if (typeof cb == "function") {
+				cb(event);
+			}
+		}.bind(this);
 	},
 
 	isDraggable: function() {
@@ -185,6 +192,7 @@ _.extend(DragonDropFarmland.prototype, {
 		}
 
 		this.flame = new FlameParticleEngine({
+			el: this.$el,
 			debug: this.flame_options.debug,
 			width: w + this.flame_options.width_modifier,
 			height: h + this.flame_options.height_modifier,
@@ -198,6 +206,7 @@ _.extend(DragonDropFarmland.prototype, {
 			'top': (offset.top - Math.floor(this.flame_options.height_modifier / 2)) + 'px',
 			'left': (offset.left - Math.floor(this.flame_options.width_modifier / 2)) + 'px'
 		});
+		
 		this.flame.start();
 	},
 

@@ -8,7 +8,7 @@ $.fn.extend({
 	}
 });
 
-// From prototypejs
+// From prototype
 Function.prototype.bind = function(a) {
 	if (arguments.length < 2 && typeof arguments[0] === 'undefined') return this;
 	var b = this,
