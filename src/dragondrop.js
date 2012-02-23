@@ -38,7 +38,7 @@ _.extend(DragonDrop.prototype, {
 						farmland.explode();
 					}
 				}.bind(this)))
-				.realOn('dragenter', function(event) { event.preventDefault(); farmland.bindCallback('dragenter')(event); })
+				.realOn('dragenter', farmland.bindCallback('dragenter', function(event) { event.preventDefault(); }))
 				.realOn('dragleave', farmland.bindCallback('dragleave'));
 		}
 
@@ -122,6 +122,7 @@ var DragonDropFarmland = function(options) {
 	this.on_fire = false;
 	this.flame = null;
 	this.flame_options = options.flame;
+	this.page_callbacks = {};
 	this.callbacks = {};
 
 	this.$el = options.el;
@@ -130,28 +131,26 @@ var DragonDropFarmland = function(options) {
 
 _.extend(DragonDropFarmland.prototype, {
 	addCallback: function(eventName, callback) {
-		if (!this.callbacks[eventName]) {
-			this.callbacks[eventName] = [];
+		if (!this.page_callbacks[eventName]) {
+			this.page_callbacks[eventName] = [];
 		}
 
-		this.callbacks[eventName].push(callback);
+		this.page_callbacks[eventName].push(callback);
 	},
 
 	bindCallback: function(eventName, cb) {
 		console.log("Binding for " + eventName);
 
-		var callbacks = this.callbacks;
-		return function(event) {
+		this.callbacks[eventName] = function(event) {
 			try {
-				if (!!this.callbacks[eventName]) {
-					console.log("Found " + this.callbacks[eventName].length + " original callbacks");
-					_.each(this.callbacks[eventName], function(callback) {
+				if (!!this.page_callbacks[eventName]) {
+					_.each(this.page_callbacks[eventName], function(callback) {
 						callback(event);
 					})
 				}
 			} catch (e) {
 				// Ignore any stupid crap the site dev does, I guess???
-				console.log("Error: ");
+				console.log("Dragon Drop Error: ");
 				console.log(e.message);
 			}
 
@@ -159,6 +158,8 @@ _.extend(DragonDropFarmland.prototype, {
 				cb(event);
 			}
 		}.bind(this);
+
+		return this.callbacks[eventName];
 	},
 
 	isDraggable: function() {
@@ -206,7 +207,19 @@ _.extend(DragonDropFarmland.prototype, {
 			'top': (offset.top - Math.floor(this.flame_options.height_modifier / 2)) + 'px',
 			'left': (offset.left - Math.floor(this.flame_options.width_modifier / 2)) + 'px'
 		});
-		
+
+		if (this.isDraggable()) {
+			this.flame.addEvent('dragstart', function(event) { this.callbacks['dragstart'](event.originalEvent); }.bind(this));
+		}
+
+		if (this.isDroppable()) {
+			console.log('adding drop event');
+			this.flame
+				.addEvent('drop', function(event) { console.log("shit is droppin yo"); this.callbacks['drop'](event.originalEvent); }.bind(this))
+				.addEvent('dragenter', function(event) { event.preventDefault(); })
+				.addEvent('dragover', function(event) { event.preventDefault(); });
+		}
+
 		this.flame.start();
 	},
 

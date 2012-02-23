@@ -13,6 +13,7 @@ var FlameParticleEngine = function(options) {
 	this.interval = null;
 	this.finish = false;
 	this.max_particles = this.options.max_particles;
+	this.events = {};
 
 	this.canvas = $('<canvas/>')
 		.prop('width', this.options.width)
@@ -29,13 +30,20 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 	},
 
+	addEvent: function(eventName, callback) {
+		this.events[eventName] = callback;
+		return this;
+	},
+
 	start: function() {
 		this.log('starting');
 
 		if (!this.finish) {
-
 			$('body').append(this.canvas);
 			this.interval = setInterval(this.loop.bind(this), 500 / this.max_particles); //@todo not hardcode?
+			_.each(this.events, function(event, eventName) {
+				this.canvas.on(eventName, event);
+			}.bind(this));
 		} else {
 			this.finish = false;
 		}
@@ -56,7 +64,7 @@ _.extend(FlameParticleEngine.prototype, {
 				if (this.finish) {
 					end();
 				}
-			}.bind(this), 4000); // @todo not hardcode?
+			}.bind(this), delay);
 		} else {
 			end();
 		}
