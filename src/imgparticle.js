@@ -39,6 +39,9 @@ function GlowParticle(posx, posy) {
 	// the current rotation
 	this.rotation = 0;
 
+	// Color for the particles
+	this.colors = {};
+
 	// the blendmode of the image render. 'source-over' is the default
 	// 'lighter' is for additive blending.
 	this.compositeOperation = 'source-over';
@@ -76,7 +79,7 @@ _.extend(GlowParticle.prototype, {
 	render: function(c) {
 
 		// if we're fully transparent, no need to render!
-		if(this.alpha ==0 ) return;
+		if (this.alpha == 0) return;
 
 		// save the current canvas state
 		c.save();
@@ -96,19 +99,17 @@ _.extend(GlowParticle.prototype, {
 		// set the composition mode
 		c.globalCompositeOperation = this.compositeOperation;
 
+		// Draw circle
 		c.beginPath();
-		c.arc(0, 0, 15, 0, Math.PI*2, true);
+		c.arc(0, 0, this.colors.radius, 0, Math.PI*2, true);
 		c.closePath();
 
-		// @todo dynamic colors
-		var g = c.createRadialGradient(0, 0, 0, 0, 0, 15);
-		g.addColorStop(0, 'rgba(255,255,255,.80)');
-		g.addColorStop(0.4, 'rgba(255,255,255,.70)');
-		g.addColorStop(0.45, 'rgba(255,255,0,.60)');
-		g.addColorStop(0.55, 'rgba(255,0,0,.50)');
-		g.addColorStop(0.8, 'rgba(255,0,0,.45)');
-		g.addColorStop(0.95, 'rgba(255,0,0,.25)');
-		g.addColorStop(1, 'rgba(255,0,0,.01)');
+		// Create gradient for colors
+		var g = c.createRadialGradient(0, 0, 0, 0, 0, this.colors.radius);
+		_.each(this.colors.stops, function (color) {
+			g.addColorStop(color[0], color[1]);
+		});
+
 		c.fillStyle = g;
 		c.fill();
 

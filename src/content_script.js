@@ -3,6 +3,8 @@ var dd = new DragonDrop({
 	dragon: config.dragons['default'],
 	flames: config.flames
 });
+DragonDrop.Colors = config.colors;
+DragonDrop.DefaultColor = config.defaultColor;
 
 var script = document.createElement('script');
 script.src = chrome.extension.getURL('src/inject.js');

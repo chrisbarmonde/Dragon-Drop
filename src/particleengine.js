@@ -124,6 +124,7 @@ _.extend(FlameParticleEngine.prototype, {
 			particle.drag = opts.drag;
 			particle.shrink = opts.shrink;
 			particle.compositeOperation = opts.compositeOperation;
+			particle.colors = DragonDrop.Colors[opts.color || DragonDrop.DefaultColor];
 
 			this.particles.push(particle);
 		}
