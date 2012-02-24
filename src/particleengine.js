@@ -1,4 +1,3 @@
-
 var FlameParticleEngine = function(options) {
 	this.options = {
 		width: 500,
@@ -171,7 +170,6 @@ _.extend(FlameParticleEngine.prototype, {
 			particle.gravity = randomRange(opts.gravity[0], opts.gravity[1]);
 			particle.drag = opts.drag;
 			particle.shrink = opts.shrink;
-			particle.compositeOperation = opts.compositeOperation;
 			particle.colors = DragonDrop.Colors[opts.color || DragonDrop.DefaultColor];
 
 			this.particles.push(particle);

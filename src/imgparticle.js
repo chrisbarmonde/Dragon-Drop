@@ -1,7 +1,7 @@
 
 var TO_RADIANS = Math.PI / 180;
 
-function GlowParticle(posx, posy) {
+function GlowParticle(posx, posy, img) {
 
 	// the position of the particle
 	this.posX = posx;
@@ -45,7 +45,8 @@ function GlowParticle(posx, posy) {
 	// the blendmode of the image render. 'source-over' is the default
 	// 'lighter' is for additive blending.
 	this.compositeOperation = 'source-over';
-}
+};
+GlowParticle.images = {};
 
 _.extend(GlowParticle.prototype, {
 
@@ -92,27 +93,46 @@ _.extend(GlowParticle.prototype, {
 		var s = this.shimmer ? this.size * Math.random() : this.size;
 		c.scale(s,s);
 
-
 		// set the alpha to the particle's alpha
 		c.globalAlpha = this.alpha;
 
 		// set the composition mode
-		c.globalCompositeOperation = this.compositeOperation;
+		c.globalCompositeOperation = this.colors.compositeOperation;
 
-		// Draw circle
-		c.beginPath();
-		c.arc(0, 0, this.colors.radius, 0, Math.PI*2, true);
-		c.closePath();
+		if (!!this.colors.image) {
+			var image = GlowParticle.images[this.colors.image];
+			if (!image) {
+				image = new Image();
+				image.src = chrome.extension.getURL(this.colors.image);
+				GlowParticle.images[this.colors.image] = image;
+			}
 
-		// Create gradient for colors
-		var g = c.createRadialGradient(0, 0, 0, 0, 0, this.colors.radius);
-		_.each(this.colors.stops, function (color) {
-			g.addColorStop(color[0], color[1]);
-		});
+			var modifier = Math.ceil(s * this.colors.image_size_modifier);
 
-		c.fillStyle = g;
-		c.fill();
+			// and rotate
+			c.rotate(this.rotation * TO_RADIANS);
+			// move the draw position to the center of the image
 
+			c.translate(0, 0);
+			//c.globalCompositeOperation = "source-over";
+			c.drawImage(image, modifier * -0.5, modifier * -0.5, modifier, modifier);
+		}
+
+		if (!!this.colors.stops) {
+			// Draw circle
+			c.beginPath();
+			c.arc(0, 0, this.colors.radius, 0, Math.PI*2, true);
+			c.closePath();
+
+			// Create gradient for colors
+			var g = c.createRadialGradient(0, 0, 0, 0, 0, this.colors.radius);
+			_.each(this.colors.stops, function (color) {
+				g.addColorStop(color[0], color[1]);
+			});
+
+			c.fillStyle = g;
+			c.fill();
+		}
 
 		// and restore the canvas state
 		c.restore();

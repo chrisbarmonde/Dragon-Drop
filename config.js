@@ -10,15 +10,13 @@ var config = {
 				"height": 500,
 				"max_particles": 50,
 				"particle": {
-					"color": "dragon-red",
 					"source": [[425, 60]],
 					"velX": [-8, -6],
 					"velY": [4, 8],
 					"size": [2, 5],
 					"gravity": [-.1, .1],
 					"drag": 1.0,
-					"shrink": .99,
-					"compositeOperation": "lighter"
+					"shrink": .99
 				}
 			}
 		}
@@ -37,8 +35,7 @@ var config = {
 			"size": [4, 9],
 			"gravity": [-.55, .01],
 			"drag": .96,
-			"shrink": .98,
-			"compositeOperation": "lighter"
+			"shrink": .98
 		},
 		"explosion": {
 			"velX": [-20, 20],
@@ -46,13 +43,13 @@ var config = {
 			"size": [4, 9],
 			"gravity": [0, 0],
 			"drag": .99,
-			"shrink": .99,
-			"compositeOperation": "lighter"
+			"shrink": .99
 		}
 	},
 
 	"colors": {
 		"dragon-red": {
+			"compositeOperation": "lighter",
 			"radius": 15,
 			"stops": [
 				[0, 'rgba(255,255,255,.80)'],
@@ -65,6 +62,7 @@ var config = {
 			]
 		},
 		"dragon-blue": {
+			"compositeOperation": "lighter",
 			"radius": 15,
 			"stops": [
 				[0, 'rgba(255,255,255,.80)'],
@@ -77,6 +75,7 @@ var config = {
 			]
 		},
 		"dragon-green": {
+			"compositeOperation": "lighter",
 			"radius": 15,
 			"stops": [
 				[0, 'rgba(255,255,255,.80)'],
@@ -87,6 +86,11 @@ var config = {
 				[0.95, 'rgba(0,255,0,.25)'],
 				[1, 'rgba(0,255,0,.01)']
 			]
+		},
+		"happycat": {
+			"compositeOperation": "source-over",
+			"image": "images/happycat-bighead.gif",
+			"image_size_modifier": 5
 		}
 	},
 
