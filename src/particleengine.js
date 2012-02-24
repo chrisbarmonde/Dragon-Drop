@@ -14,7 +14,7 @@ var FlameParticleEngine = function(options) {
 	this.events = {};
 
 	this.interval = null;
-	this.explosion_interval = null;
+	this.explosion = null;
 	this.finish = false;
 
 	this.canvas = $('<canvas/>')
@@ -63,7 +63,11 @@ _.extend(FlameParticleEngine.prototype, {
 
 		var end = function() {
 			clearInterval(this.interval);
-			clearInterval(this.explosion_interval);
+			if (!!this.explosion) {
+				clearInterval(this.explosion.interval);
+				this.explosion.clone.remove();
+				this.explosion.original.show();
+			}
 
 			this.canvas.remove();
 			this.finish = false;
@@ -81,27 +85,43 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 	},
 
-	explode: function() {
+	explode: function($el, extinguish_time) {
 		this.makeParticle(4 * this.max_particles, this.options.explosion);
 
-		var offset = this.canvas.offset();
+		var offset = $el.offset();
+		var $clone = $el.clone();
+		$el.hide();
+		$clone.css({
+			'position': 'absolute',
+			'top': offset.top + 'px',
+			'left': offset.left + 'px'
+		}).appendTo($('body'));
+
 		var bounds = {
-			top: [offset.top - 40, offset.top + 40],
-			left: [offset.left - 40, offset.left + 40]
+			top: [offset.top - 60, offset.top + 60],
+			left: [offset.left - 60, offset.left + 60]
 		};
+		var opacity = 1.0;
+		var opacity_modifier = 100 / (extinguish_time / 2); // kind of ensure it disappears
 
-		this.explosion_interval = setInterval(function() {
-			offset.top += Math.floor(randomRange(-10, 10));
-			offset.left += Math.floor(randomRange(-10, 10));
+		this.explosion = {
+			clone: $clone,
+			original: $el,
+			interval: setInterval(function() {
+				offset.top += Math.floor(randomRange(-20, 20));
+				offset.left += Math.floor(randomRange(-20, 20));
 
-			offset.top = Math.max(bounds.top[0], Math.min(bounds.top[1], offset.top));
-			offset.left = Math.max(bounds.left[0], Math.min(bounds.left[1], offset.left));
+				offset.top = Math.max(bounds.top[0], Math.min(bounds.top[1], offset.top));
+				offset.left = Math.max(bounds.left[0], Math.min(bounds.left[1], offset.left));
 
-			this.canvas.css({
-				'top': offset.top + 'px',
-				'left': offset.left + 'px'
-			});
-		}.bind(this), 30);
+				opacity -= opacity_modifier;
+				$clone.css({
+					'top': offset.top + 'px',
+					'left': offset.left + 'px',
+					'opacity': opacity
+				});
+			}.bind(this), 100)
+		};
 	},
 
 	loop: function() {

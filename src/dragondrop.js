@@ -263,6 +263,6 @@ _.extend(DragonDropFarmland.prototype, {
 
 	explode: function() {
 		console.log("EXPLODIN'");
-		this.flame.explode();
+		this.flame.explode(this.$el, this.flame_options.extinguish_time);
 	}
 });

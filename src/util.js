@@ -18,3 +18,7 @@ Function.prototype.bind = function(a) {
 		return b.apply(a, d)
 	}
 };
+
+function randomRange(min, max) {
+	return ((Math.random()*(max-min)) + min);
+}

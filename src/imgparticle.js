@@ -118,8 +118,3 @@ _.extend(GlowParticle.prototype, {
 		c.restore();
 	}
 });
-
-
-function randomRange(min, max) {
-	return ((Math.random()*(max-min)) + min);
-}
