@@ -95,5 +95,4 @@ var config = {
 	},
 
 	"defaultColor": "dragon-red"
-
 }

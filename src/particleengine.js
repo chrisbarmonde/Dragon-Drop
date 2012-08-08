@@ -1,4 +1,5 @@
 var FlameParticleEngine = function(options) {
+	// Options for the canvas element + particles
 	this.options = {
 		width: 500,
 		height: 500,
@@ -49,7 +50,8 @@ _.extend(FlameParticleEngine.prototype, {
 			$('body').append(this.canvas);
 			this.interval = setInterval(this.loop.bind(this), 500 / this.max_particles); //@todo not hardcode?
 
-			// re-add events
+			// Re-add events since they're all gone when the element is
+			// removed from the page.
 			_.each(this.events, function(event, eventName) {
 				this.canvas.on(eventName, event);
 			}.bind(this));
@@ -72,6 +74,8 @@ _.extend(FlameParticleEngine.prototype, {
 			this.finish = false;
 		}.bind(this);
 
+		// Since we let the flames fade out a little bit,
+		// we might have a slightly delay before actually ending
 		if (!!delay) {
 			this.finish = true;
 			_.delay(function(){
@@ -84,6 +88,13 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 	},
 
+	/**
+ 	 * The explosion includes a bunch of particles for the effect, but also
+	 * cloning the original element on the page so we can do some shaky-cam
+	 * style thing to make it look like the explosion actually did something.
+	 * We just hide the original element and mess around with the clone, then
+	 * set them all back later in end()
+	 */
 	explode: function($el, extinguish_time) {
 		this.makeParticle(4 * this.max_particles, this.options.explosion);
 
@@ -123,6 +134,10 @@ _.extend(FlameParticleEngine.prototype, {
 		};
 	},
 
+	/**
+	 * This handles making the particles and making them move
+	 * and fade away and whatnot.
+	 */
 	loop: function() {
 
 		// make a particle
@@ -130,16 +145,16 @@ _.extend(FlameParticleEngine.prototype, {
 			this.makeParticle(1, this.options.particle);
 		}
 
-		// clear the canvas
 		if (this.options.debug) {
-			// fill with black so you can see bounding box
+			// Fill the canvas with black so you can see the bounding box
 			this.context.fillColor = 'rgb(0,0,0)';
 			this.context.fillRect(0, 0, this.options.width, this.options.height);
 		} else {
+			// Clear the canvas for a repaint
 			this.context.clearRect(0, 0, this.options.width, this.options.height);
 		}
 
-		// iteratate through each particle
+		// Iteratate through each particle
 		for (i = 0; i < this.particles.length; i++) {
 			var particle = this.particles[i];
 			particle.render(this.context);
@@ -150,12 +165,16 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 
 		// Keep taking the oldest particles away until we have
-		// fewer than the maximum allowed.
+		// fewer than the maximum allowed, unless we're finishing, at which
+		// point just let everything stay there until the element goes away.
 		while (!this.finish && this.particles.length > this.max_particles) {
 			this.particles.shift();
 		}
 	},
 
+	/**
+	 * Creates a particle based on all the options in the config
+	 */
 	makeParticle: function(particleCount, opts) {
 		for (var i = 0; i < particleCount; i++) {
 
@@ -176,6 +195,10 @@ _.extend(FlameParticleEngine.prototype, {
 		}
 	},
 
+	/**
+	 * Moves the canvas element by some offset. Used for tracking the
+	 * flame when the mouse moves the dragon around.
+	 */
 	move: function(event, offset) {
 		event.preventDefault();
 		this.canvas.css({

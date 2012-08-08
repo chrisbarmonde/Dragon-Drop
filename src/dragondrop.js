@@ -1,14 +1,26 @@
-
 var DragonDrop = function(options) {
+	// Whether or not the dragon is on the prowl
 	this.dragon_comin_yo = false;
+
+	// Farmland is a combination of lairs and dropzones.
+	// Anything that might be able to be burned down.
 	this.farmland = [];
+
+	// Lairs are where the dragons reside (draggable elements)
 	this.lairs = [];
+
+	// Dropzones are where the dragons end up (droppable elements)
 	this.dropzones = [];
 
+	// Options for this dragon and how it's displayed
 	this.dragon_options = options.dragon;
+
+	// The image  for the dragon
 	this.dragon = $('<img/>')
-		.css('opacity', '0.5', 'important')
+		.css('opacity', '0.5', 'important') // This doesn't do anything. lollerskates.
 		.prop('src', chrome.extension.getURL(this.dragon_options.image));
+
+	// The particle engine that generates the flame
 	this.dragon_breath = new FlameParticleEngine(this.dragon_options.particleEngine);
 
 	this.flame_options = options.flames;
@@ -32,6 +44,11 @@ _.extend(DragonDrop.prototype, {
 		});
 	},
 
+	/**
+	 * Make an element on the page Dragon Droppable. Dragon Drop works by
+	 * overriding the drag events and applying a bunch of canvas elements
+	 * on top of other elements, so this sets all that up.
+	 */
 	attachFarmland: function(element, opts) {
 		var farmland = this.getFarmland(element);
 
@@ -46,11 +63,13 @@ _.extend(DragonDrop.prototype, {
 			this.dropzones.push(farmland);
 			farmland.$el.realOn('dragover', farmland.bindCallback('dragover', function(event) {
 					event.preventDefault();
+					// If the dragon is active, set this place ablaze
 					if (this.dragon_comin_yo) {
 						farmland.burninate();
 					}
 				}.bind(this)))
 				.realOn('drop', farmland.bindCallback('drop', function(event) {
+					// If the dragon's landing, blow this place right on up
 					if (this.dragon_comin_yo) {
 						farmland.explode();
 					}
@@ -63,6 +82,7 @@ _.extend(DragonDrop.prototype, {
 	},
 
 	getFarmland: function(element) {
+		// Check first if we already have this element set up
 		for (var i = 0; i < this.farmland.length; i++) {
 			var farmland = this.farmland[i];
 			if (farmland.el == element.get(0)) {
@@ -78,9 +98,12 @@ _.extend(DragonDrop.prototype, {
 	},
 
 	dragstart: function(event) {
+		// This sets up the custom image from the config.
 		var pos = this.dragon_options.position;
 		event.dataTransfer.setDragImage(
 			this.dragon.get(0), pos[0], pos[1]
+			// Use this line if you just want to see the flame
+			//new Image(), pos[0], pos[1]
 		);
 
 		if (!event.dataTransfer.hasData()) {
@@ -94,6 +117,9 @@ _.extend(DragonDrop.prototype, {
 		_.each(this.dropzones, function(dropzone) { dropzone.$el.css('opacity', '0.8'); });
 	},
 
+	/**
+	 * Adjusts the position of the flame on drag relative to the dragon
+	 */
 	drag: function(event) {
 		this.dragon_breath.move(event, this.dragon_options.flamePosition);
 	},
@@ -107,6 +133,9 @@ _.extend(DragonDrop.prototype, {
 		this.extinguish();
 	},
 
+	/**
+	 * Kills all the canvas elements
+	 */
 	extinguish: function() {
 		_.each(this.dropzones, function(target) {
 			target.extinguish();
@@ -137,10 +166,17 @@ _.extend(DragonDrop.prototype, {
 });
 
 var DragonDropFarmland = function(options) {
+	// Whether or not this element has been lit up already
 	this.on_fire = false;
+
+	// Holds the actual particle engine generating the flame
 	this.flame = null;
 	this.flame_options = options.flame;
+
+	// Callbacks set by the original page creator
 	this.page_callbacks = {};
+
+	// Callbacks set by me!
 	this.callbacks = {};
 
 	this.$el = options.el;
@@ -170,6 +206,10 @@ _.extend(DragonDropFarmland.prototype, {
 
 		this.callbacks[eventName] = function(event) {
 			try {
+				// Make sure that if the originating page has set any
+				// specific callbacks, we actually call them! Even though
+				// these were set on the page, the context should be bound
+				// properly so they should still work (and apparently do! magic.)
 				if (!!this.page_callbacks[eventName]) {
 					_.each(this.page_callbacks[eventName], function(callback) {
 						callback(event);
@@ -181,6 +221,7 @@ _.extend(DragonDropFarmland.prototype, {
 				console.log(e.message);
 			}
 
+			// Fire the DD callback only if we're actually active
 			if (this.enabled && typeof cb == "function") {
 				cb(event);
 			}
@@ -198,6 +239,7 @@ _.extend(DragonDropFarmland.prototype, {
 	},
 
 	burninate: function() {
+		// Turn the flame on if we need to, otherwise, just don't do anything
 		if (!!this.flame) {
 			if (!this.on_fire) {
 				this.flame.start();
@@ -211,6 +253,11 @@ _.extend(DragonDropFarmland.prototype, {
 
 		this.on_fire = true;
 
+		// Oh god, math
+		// The flames on the elements are controlled by the config. There are
+		// some number of sources generating the flame particles, and we space
+		// them out evenly here so they're not all crazy and overlapping and dumb.
+		// I think this works????
 		var sources = [];
 		for (var i = 1; i <= this.flame_options.sources; i++) {
 			sources.push([
@@ -221,6 +268,9 @@ _.extend(DragonDropFarmland.prototype, {
 
 		var offset = this.$el.offset();
 
+		// The canvas element is also created, by default, slightly larger than the
+		// original element (so that the flames can extend a little beyond the element
+		// to make it somewhat more realistic). This sets that up.
 		var top = offset.top - Math.floor(this.flame_options.height_modifier / 2);
 		var left = offset.left - Math.floor(this.flame_options.width_modifier / 2);
 		var width = w + this.flame_options.width_modifier;
@@ -237,6 +287,11 @@ _.extend(DragonDropFarmland.prototype, {
 			particle: _.defaults({source: sources}, this.flame_options.particle),
 			explosion: _.defaults({source: [[Math.floor(width / 2), Math.floor(height / 2)]]}, this.flame_options.explosion)
 		});
+
+
+		// This last part is kind of important. Since we're overlaying a canvas element on
+		// top of the original element, we need to *pass through* the original events so
+		// that everything is called as expected.
 
 		if (this.isDraggable()) {
 			this.flame.addEvent('dragstart', function(event) { this.callbacks['dragstart'](event.originalEvent); }.bind(this));

@@ -1,6 +1,6 @@
 
-// Need a way to determine if the dataTransfer object actually has data attached. If it doesn't, then
-// some browsers will just not fire certain drag events.
+// Need a way to determine if the dataTransfer object actually has data attached.
+// If it doesn't, then some browsers will just not fire certain drag events.
 Clipboard.prototype.realSetData = Clipboard.prototype.setData;
 Clipboard.prototype.dataSet = false;
 Clipboard.prototype.data_type = null;

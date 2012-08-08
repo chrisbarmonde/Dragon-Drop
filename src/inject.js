@@ -19,12 +19,13 @@
 		};
 	};
 
-	// Hidden element
+	// Create a hidden div that we can use to trigger custom events
 	var dragondrop_el = document.createElement('div');
 	dragondrop_el.id = 'dragondrop_events';
 	dragondrop_el.style.display = 'none !important';
 	document.querySelector('html').appendChild(dragondrop_el);
 
+	// All the necessary drag events
 	var drag_events = ['dragstart', 'drag', 'dragenter', 'dragover', 'dragleave', 'drop', 'drageend'];
 	var drag_events_we_actually_care_about = ['dragstart', 'drop'];
 
@@ -35,6 +36,7 @@
 	Element.prototype.addEventListener = function(eventName, callback, useCapture) {
 		// Override with DRAGON DROPPING TECHNOLOGY
 		if (drag_events.indexOf(eventName) > -1) {
+			// Tag these so we can reference them later
 			if (drag_events_we_actually_care_about.indexOf(eventName) > -1) {
 				switch (eventName) {
 					case 'dragstart': this.setAttribute('dragondrop-draggable', 'true'); break;
@@ -42,6 +44,7 @@
 				}
 			}
 
+			// Fire our custom event with any necessary info we need!
 			var dragondrop_event = document.createEvent('CustomEvent');
 			dragondrop_event.initCustomEvent('DragonDropUpdate', false, false, {
 				eventName: eventName,
@@ -52,6 +55,7 @@
 			return;
 		}
 
+		// Just pass through any events we don't care about
 		this.realAddEventListener(eventName, callback, useCapture);
 	}
 })();
